@@ -1,0 +1,1 @@
+web: mongo-admin-api
