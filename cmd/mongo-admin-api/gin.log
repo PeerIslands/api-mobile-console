@@ -9,10 +9,4 @@
 [GIN-debug] POST   /v1/user/                 --> mongo-admin-backend/api/handler.MakeUserNoAuthHandlers.func1 (4 handlers)
 [GIN-debug] GET    /v1/mongodb/groups        --> mongo-admin-backend/api/handler.MakeMongoHandlers.func1 (5 handlers)
 [GIN-debug] GET    /v1/mongodb/process       --> mongo-admin-backend/api/handler.MakeMongoHandlers.func2 (5 handlers)
-[GIN-debug] Listening and serving HTTP on :8000
-[GIN] 2021/04/22 - 12:42:19 | 200 |  522.453584ms |             ::1 | GET      "/v1/mongodb/process?group_id=6079bd90458fbb6390821569"
-[GIN] 2021/04/22 - 16:36:32 | 200 |   572.94541ms |             ::1 | POST     "/v1/login"
-[GIN-debug] redirecting request 301: /v1/user/ --> /v1/user/
-[GIN] 2021/04/22 - 16:36:42 | 200 |   69.108734ms |             ::1 | GET      "/v1/user/"
-[GIN] 2021/04/22 - 16:37:32 | 200 |  596.678107ms |             ::1 | GET      "/v1/mongodb/groups"
-[GIN] 2021/04/22 - 16:37:52 | 200 |    219.0085ms |             ::1 | GET      "/v1/mongodb/process?group_id=6079bd90458fbb6390821569"
+[GIN-debug] Listening and serving HTTP on :

@@ -49,7 +49,7 @@ func main() {
 	handler.MakeUserNoAuthHandlers(r, userService)
 	handler.MakeMongoHandlers(r)
 
-	r.Run(":" + config.PORT)
+	r.Run(":" + config.ENVIRONMENT.PORT)
 }
 
 

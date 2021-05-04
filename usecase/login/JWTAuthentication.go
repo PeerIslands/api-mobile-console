@@ -35,7 +35,7 @@ func JWTAuthService() JWTService {
 }
 
 func getSecretKey() string {
-	secret := config.JWT_SECRET_KEY
+	secret := config.ENVIRONMENT.JWT_SECRET_KEY
 	if secret == "" {
 		secret = "secret"
 	}
@@ -78,7 +78,7 @@ func VerifyToken(tokenString string) (email string, err error) {
 	claims := &presenter.Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return config.JWT_SECRET_KEY, nil
+		return config.ENVIRONMENT.JWT_SECRET_KEY, nil
 	})
 
 	if token != nil {
@@ -99,7 +99,7 @@ func GetEmail(ctx *gin.Context) (email string, err error) {
 	claims := &presenter.Claims{}
 
 	token, _ := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return config.JWT_SECRET_KEY, nil
+		return config.ENVIRONMENT.JWT_SECRET_KEY, nil
 	})
 
 	claims, _ = token.Claims.(*presenter.Claims)

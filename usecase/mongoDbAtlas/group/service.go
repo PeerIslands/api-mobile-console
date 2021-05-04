@@ -1,7 +1,8 @@
-package mongoDb
+package group
 
 import (
 	"encoding/json"
+	"mongo-admin-backend/api/presenter"
 	"mongo-admin-backend/config"
 	"mongo-admin-backend/entity"
 	"mongo-admin-backend/pkg/digest"
@@ -23,19 +24,19 @@ func NewService(publicKey, privateKey string) *Service {
 }
 
 // Get Groups.
-func (s *Service) Get() ([]entity.MongoGroups, error) {
+func (s *Service) Get() ([]presenter.MongoGroups, error) {
 	return s.digestGroups(s.PublicKey, s.PrivateKey)
 }
 
 // Get Groups.
-func (s *Service) digestGroups(u, p string) ([]entity.MongoGroups, error) {
+func (s *Service) digestGroups(u, p string) ([]presenter.MongoGroups, error) {
 	digestor := digest.NewDigestor(u,p)
-	result := digestor.Digest(config.BASE_PATH, config.GROUPS_PATH, "GET", nil)
+	result := digestor.Digest(config.ENVIRONMENT.BASE_PATH, config.ENVIRONMENT.GROUPS_PATH, "GET", nil)
 
 	var val map[string]interface{}
 
 	_ = json.Unmarshal(result, &val)
-	var mongoGroups []entity.MongoGroups
+	var mongoGroups []presenter.MongoGroups
 
 	jsonEncoded, _ := json.Marshal(val["results"])
 
