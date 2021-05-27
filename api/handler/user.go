@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"log"
 	"mongo-admin-backend/api/middleware"
 	"mongo-admin-backend/api/presenter"
@@ -10,6 +9,8 @@ import (
 	"mongo-admin-backend/usecase/login"
 	"mongo-admin-backend/usecase/user"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func createUser(service user.UseCase, ctx *gin.Context) {
@@ -74,13 +75,13 @@ func getUser(service user.UseCase, ctx *gin.Context) {
 	}
 }
 
-func deleteUser(service user.UseCase, ctx *gin.Context)  {
-		email, err := login.GetEmail(ctx)
-		err = service.DeleteUser(email)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, err)
-		}
-		ctx.JSON(http.StatusOK, nil)
+func deleteUser(service user.UseCase, ctx *gin.Context) {
+	email, err := login.GetEmail(ctx)
+	err = service.DeleteUser(email)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+	}
+	ctx.JSON(http.StatusOK, nil)
 }
 
 // MakeUserHandlers make url handlers.
@@ -98,6 +99,10 @@ func MakeUserHandlers(r *gin.Engine, service user.UseCase) {
 
 // MakeUserNoAuthHandlers make url handlers.
 func MakeUserNoAuthHandlers(r *gin.Engine, service user.UseCase) {
+	r.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(200, nil)
+	})
+
 	v1 := r.Group("/v1/user")
 	{
 		v1.POST("/", func(ctx *gin.Context) {

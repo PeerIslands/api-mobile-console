@@ -3,6 +3,7 @@ package digest
 import (
 	"bytes"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,7 +18,6 @@ type Digestor struct {
 	password string
 }
 
-
 func NewDigestor(publicKey, privateKey string) *Digestor {
 	return &Digestor{
 		username: publicKey,
@@ -25,19 +25,20 @@ func NewDigestor(publicKey, privateKey string) *Digestor {
 	}
 }
 
-func (d *Digestor) Digest(host, uri, method string, postBody []byte) []byte {
+func (d *Digestor) Digest(host, uri, method string, postBody []byte) ([]byte, error) {
 	url := host + uri
 	req, _ := http.NewRequest(method, url, nil)
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
+
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusUnauthorized {
 		log.Printf("Recieved status code '%v' auth skipped", resp.StatusCode)
-		return nil
+		return nil, errors.New("Auth Skipped")
 	}
 	digestParts := digestParts(resp)
 	digestParts["uri"] = uri
@@ -49,6 +50,8 @@ func (d *Digestor) Digest(host, uri, method string, postBody []byte) []byte {
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err = client.Do(req)
+	fmt.Println("the error is ")
+	fmt.Println(err)
 	if err != nil {
 		panic(err)
 	}
@@ -58,14 +61,15 @@ func (d *Digestor) Digest(host, uri, method string, postBody []byte) []byte {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("response body: ", string(body))
-		return nil
+		//fmt.Println("response body: ", string(body))
+
+		return body, errors.New("Error in Calling the API")
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
-	return body
+	return body, nil
 }
 
 func digestParts(resp *http.Response) map[string]string {

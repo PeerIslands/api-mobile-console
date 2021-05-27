@@ -2,6 +2,7 @@ package groups
 
 import (
 	"encoding/json"
+	"fmt"
 	"mongo-admin-backend/api/presenter"
 	"mongo-admin-backend/config"
 	"mongo-admin-backend/entity"
@@ -17,12 +18,12 @@ type Service struct {
 // NewService create new use case.
 func NewService(publicKey, privateKey, groupId string) *Service {
 	atlasParams := entity.AtlasParams{
-		PublicKey: publicKey,
+		PublicKey:  publicKey,
 		PrivateKey: privateKey,
 	}
 	return &Service{
 		AtlasParams: atlasParams,
-		GroupId: groupId,
+		GroupId:     groupId,
 	}
 }
 
@@ -33,9 +34,10 @@ func (s *Service) Get() ([]presenter.Process, error) {
 
 // Get Groups.
 func (s *Service) digestGroups(u, p, g string) ([]presenter.Process, error) {
-	digestor := digest.NewDigestor(u,p)
-	result := digestor.Digest(config.ENVIRONMENT.BASE_PATH, config.ENVIRONMENT.GROUPS_PATH + "/" + g +
+	digestor := digest.NewDigestor(u, p)
+	result, err := digestor.Digest(config.ENVIRONMENT.BASE_PATH, config.ENVIRONMENT.GROUPS_PATH+"/"+g+
 		"/processes?pretty=true", "GET", nil)
+	fmt.Println(err)
 
 	var mongoProcess []presenter.Process
 	var val map[string]interface{}

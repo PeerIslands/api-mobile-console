@@ -2,6 +2,7 @@ package group
 
 import (
 	"encoding/json"
+	"fmt"
 	"mongo-admin-backend/api/presenter"
 	"mongo-admin-backend/config"
 	"mongo-admin-backend/entity"
@@ -17,7 +18,7 @@ type Service struct {
 func NewService(publicKey, privateKey string) *Service {
 	return &Service{
 		entity.AtlasParams{
-			PublicKey: publicKey,
+			PublicKey:  publicKey,
 			PrivateKey: privateKey,
 		},
 	}
@@ -30,9 +31,9 @@ func (s *Service) Get() ([]presenter.MongoGroups, error) {
 
 // Get Groups.
 func (s *Service) digestGroups(u, p string) ([]presenter.MongoGroups, error) {
-	digestor := digest.NewDigestor(u,p)
-	result := digestor.Digest(config.ENVIRONMENT.BASE_PATH, config.ENVIRONMENT.GROUPS_PATH, "GET", nil)
-
+	digestor := digest.NewDigestor(u, p)
+	result, err := digestor.Digest(config.ENVIRONMENT.BASE_PATH, config.ENVIRONMENT.GROUPS_PATH, "GET", nil)
+	fmt.Println(err)
 	var val map[string]interface{}
 
 	_ = json.Unmarshal(result, &val)

@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"io"
 	"mongo-admin-backend/api/handler"
 	"mongo-admin-backend/config"
@@ -13,9 +12,13 @@ import (
 	"mongo-admin-backend/usecase/login"
 	"mongo-admin-backend/usecase/user"
 	"os"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	config.Start()
 	contextWrapper.Start()
 	defer contextWrapper.Cancel()
 	database.ConnectDatabase()
@@ -43,14 +46,10 @@ func main() {
 	userRepo := repository.NewUserMongoDB(database.Client)
 	userService := user.NewService(userRepo)
 
-
 	//user
 	handler.MakeUserHandlers(r, userService)
 	handler.MakeUserNoAuthHandlers(r, userService)
 	handler.MakeMongoHandlers(r)
-
-	r.Run(":" + config.ENVIRONMENT.PORT)
+	fmt.Println("Server is running at: " + config.ENVIRONMENT.API_PORT)
+	r.Run(":" + config.ENVIRONMENT.API_PORT)
 }
-
-
-
