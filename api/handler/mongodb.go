@@ -58,23 +58,23 @@ func getMongoDbProcessMeasurement(ctx *gin.Context) {
 	groupId, isGroupIdPresent := params[config.PARAM_GROUP]
 	processId, isProcessIdPresent := params[config.PARAM_PROCESS]
 	if isGroupIdPresent && isProcessIdPresent {
-		fmt.Println(processId)
-		var paramMap = make(map[string]string)
+		fmt.Println(params[config.PARAM_MEASUREMENT])
+		var paramMap = make(map[string][]string)
 
 		if val, ok := params[config.PARAM_GRANULARITY]; ok {
-			paramMap[config.PARAM_GRANULARITY] = val[0]
+			paramMap[config.PARAM_GRANULARITY] = val
 		}
 		if val, ok := params[config.PARAM_PERIOD]; ok {
-			paramMap[config.PARAM_PERIOD] = val[0]
+			paramMap[config.PARAM_PERIOD] = val
 		}
 		if val, ok := params[config.PARAM_ST_DATE]; ok {
-			paramMap[config.PARAM_ST_DATE] = val[0]
+			paramMap[config.PARAM_ST_DATE] = val
 		}
 		if val, ok := params[config.PARAM_END_DATE]; ok {
-			paramMap[config.PARAM_END_DATE] = val[0]
+			paramMap[config.PARAM_END_DATE] = val
 		}
 		if val, ok := params[config.PARAM_MEASUREMENT]; ok {
-			paramMap[config.PARAM_MEASUREMENT] = val[0]
+			paramMap[config.PARAM_MEASUREMENT] = val
 		}
 
 		us, _ := userService.GetUser(email)

@@ -14,11 +14,11 @@ type Service struct {
 	entity.AtlasParams
 	GroupId   string
 	ProcessId string
-	Params    map[string]string
+	Params    map[string][]string
 }
 
 // NewService create new use case.
-func NewService(publicKey, privateKey, groupId, processId string, qParams map[string]string) *Service {
+func NewService(publicKey, privateKey, groupId, processId string, qParams map[string][]string) *Service {
 	atlasParams := entity.AtlasParams{
 		PublicKey:  publicKey,
 		PrivateKey: privateKey,
@@ -37,7 +37,7 @@ func (s *Service) Get() (presenter.Measurements, presenter.ErrorDetail, error) {
 }
 
 // Get Groups.
-func (s *Service) digestProcessMeasurements(u, p, g, proc string, params map[string]string) (presenter.Measurements, presenter.ErrorDetail, error) {
+func (s *Service) digestProcessMeasurements(u, p, g, proc string, params map[string][]string) (presenter.Measurements, presenter.ErrorDetail, error) {
 	digestor := digest.NewDigestor(u, p)
 	path := config.ENVIRONMENT.GROUPS_PATH + "/" + g + "/" +
 		config.PATH_PROCESS + "/" + proc + "/" +
@@ -49,31 +49,33 @@ func (s *Service) digestProcessMeasurements(u, p, g, proc string, params map[str
 	enDate, isEndPresent := params[config.PARAM_END_DATE]
 	measurementName, isMPresent := params[config.PARAM_MEASUREMENT]
 
+	fmt.Println(params[config.PARAM_MEASUREMENT])
+
 	if isGranPresent {
-		path = path + "&" + config.PARAM_GRANULARITY + "=" + granStr
+		path = path + "&" + config.PARAM_GRANULARITY + "=" + granStr[0]
 	}
 	if isPeriodPresent {
-		path = path + "&" + config.PARAM_PERIOD + "=" + prdStr
+		path = path + "&" + config.PARAM_PERIOD + "=" + prdStr[0]
 	}
 	if isStpresent {
-		path = path + "&" + config.PARAM_ST_DATE + "=" + stDate
+		path = path + "&" + config.PARAM_ST_DATE + "=" + stDate[0]
 	}
 
 	if isEndPresent {
-		path = path + "&" + config.PARAM_END_DATE + "=" + enDate
+		path = path + "&" + config.PARAM_END_DATE + "=" + enDate[0]
 	}
 	if isMPresent {
-		path = path + "&" + config.PARAM_MEASUREMENT + "=" + measurementName
+		for _, m := range measurementName {
+			path = path + "&" + config.PARAM_MEASUREMENT + "=" + m
+		}
 	}
 
 	result, err := digestor.Digest(config.ENVIRONMENT.BASE_PATH, path, "GET", nil)
-	fmt.Println(err)
 	var mongoMeasurements presenter.Measurements
 	var errDetails presenter.ErrorDetail
 	var val map[string]interface{}
 
 	_ = json.Unmarshal(result, &val)
-	fmt.Println(val)
 	jsonEncoded, _ := json.Marshal(val)
 
 	_ = json.Unmarshal(jsonEncoded, &mongoMeasurements)
