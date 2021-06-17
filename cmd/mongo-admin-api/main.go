@@ -8,7 +8,9 @@ import (
 	"mongo-admin-backend/infrastructure/database"
 	"mongo-admin-backend/infrastructure/repository"
 	"mongo-admin-backend/pkg/contextWrapper"
+	"mongo-admin-backend/usecase/accesslist"
 	"mongo-admin-backend/usecase/auth"
+	dbaccesslist "mongo-admin-backend/usecase/dbAccesslist"
 	"mongo-admin-backend/usecase/login"
 	"mongo-admin-backend/usecase/user"
 	"os"
@@ -43,13 +45,20 @@ func main() {
 	r.Use(gin.Recovery())
 
 	handler.AddNonAuthRoutes(r, authService)
-	userRepo := repository.NewUserMongoDB(database.Client)
+	userRepo := repository.NewUserMongoDB(database.Client) //UserMongoDB
 	userService := user.NewService(userRepo)
+	accessListRepo := repository.NewNetworkAccessMongoDB(database.Client, config.ENVIRONMENT.BASE_PATH) //NetworkAccessMongoDB
+	accessListService := accesslist.NewService(accessListRepo)
+
+	dbAccessListRepo := repository.NewDatabaseAccessMongoDB(database.Client, config.ENVIRONMENT.BASE_PATH)
+	dbAccessListService := dbaccesslist.NewService(dbAccessListRepo)
 
 	//user
 	handler.MakeUserHandlers(r, userService)
 	handler.MakeUserNoAuthHandlers(r, userService)
 	handler.MakeMongoHandlers(r)
+	handler.MakeMongoAccessHandlers(r, accessListService)
+	handler.MakeMongoDBAccessHandlers(r, dbAccessListService)
 	fmt.Println("Server is running at: " + config.ENVIRONMENT.API_PORT)
 	r.Run(":" + config.ENVIRONMENT.API_PORT)
 }

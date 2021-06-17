@@ -83,16 +83,13 @@ func getMongoDbProcessMeasurement(ctx *gin.Context) {
 		service := processMeasurements.NewService(u, p, groupId[0], processId[0], paramMap)
 		mongoGroups, errorDetail, err := service.Get()
 		if err != nil {
-			fmt.Println("Error in calling the API 2")
-			fmt.Println(err)
-			fmt.Println(errorDetail)
 			ctx.JSON(errorDetail.Error, errorDetail)
 		} else {
 			ctx.JSON(http.StatusOK, mongoGroups)
 		}
 
 	} else {
-		ctx.JSON(http.StatusForbidden, errors.New("group_id is required"))
+		ctx.JSON(http.StatusForbidden, errors.New("group_id and process_id is required"))
 	}
 
 }
