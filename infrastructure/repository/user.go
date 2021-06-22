@@ -2,18 +2,18 @@ package repository
 
 import (
 	"context"
-	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"mongo-admin-backend/entity"
 	"mongo-admin-backend/pkg/contextWrapper"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // UserMongoDB mongoDB repo.
 type UserMongoDB struct {
-	client *mongo.Client
+	client     *mongo.Client
 	collection *mongo.Collection
 }
 
@@ -22,7 +22,7 @@ func NewUserMongoDB(client *mongo.Client) *UserMongoDB {
 	collection := client.Database("mongoDbAdmin").Collection("users")
 
 	return &UserMongoDB{
-		client: client,
+		client:     client,
 		collection: collection,
 	}
 }
@@ -57,14 +57,12 @@ func getUser(ctx context.Context, email string, collection *mongo.Collection) (*
 
 // Update an user.
 func (r *UserMongoDB) Update(e *entity.User) error {
-	fmt.Println(e)
-
 	return nil
 }
 
 // Delete an user.
 func (r *UserMongoDB) Delete(email string) error {
-	_, err := r.collection.DeleteOne(contextWrapper.Ctx,  bson.M{
+	_, err := r.collection.DeleteOne(contextWrapper.Ctx, bson.M{
 		"email": email,
 	}, nil)
 

@@ -32,3 +32,7 @@ func (s *Service) CreateDBAccessRequest(u, p string, ent *entity.DBAccessRequest
 func (s *Service) CreateDBAccessList(ent *entity.DBAccessRequest) error {
 	return s.repo.Create(ent)
 }
+
+func (s *Service) UpdateDBAccessRequestStatus(u, p, id, status string) (bool, error) {
+	return s.repo.UpdateRequestStatus(u, p, id, status)
+}

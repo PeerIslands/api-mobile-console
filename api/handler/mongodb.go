@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"mongo-admin-backend/api/middleware"
 	"mongo-admin-backend/config"
 	"mongo-admin-backend/infrastructure/database"
@@ -29,7 +28,6 @@ func getMongoDbProcess(ctx *gin.Context) {
 	userService := user.NewService(userRepo)
 	params := ctx.Request.URL.Query()
 	if val, ok := params["group_id"]; ok {
-		fmt.Println(val)
 		us, _ := userService.GetUser(email)
 		u := crypto.Decrypt(us.AtlasParams.PublicKey, us.Key)
 		p := crypto.Decrypt(us.AtlasParams.PrivateKey, us.Key)
@@ -54,11 +52,9 @@ func getMongoDbProcessMeasurement(ctx *gin.Context) {
 	userRepo := repository.NewUserMongoDB(database.Client)
 	userService := user.NewService(userRepo)
 	params := ctx.Request.URL.Query()
-	//fmt.Println(params)
 	groupId, isGroupIdPresent := params[config.PARAM_GROUP]
 	processId, isProcessIdPresent := params[config.PARAM_PROCESS]
 	if isGroupIdPresent && isProcessIdPresent {
-		fmt.Println(params[config.PARAM_MEASUREMENT])
 		var paramMap = make(map[string][]string)
 
 		if val, ok := params[config.PARAM_GRANULARITY]; ok {

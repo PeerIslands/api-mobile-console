@@ -2,8 +2,8 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"mongo-admin-backend/api/middleware"
+	"mongo-admin-backend/config"
 	"mongo-admin-backend/infrastructure/database"
 	"mongo-admin-backend/infrastructure/repository"
 	"mongo-admin-backend/pkg/crypto"
@@ -40,6 +40,7 @@ func createNetworkAccess(service accesslist.UseCase, ctx *gin.Context) {
 	params := ctx.Request.URL.Query()
 
 	id, isIdPresent := params["id"]
+
 	if isIdPresent {
 		accessRequest, err := service.GetOneNetworkAccessRequest(id[0])
 		//GET USER KEYS
@@ -50,10 +51,13 @@ func createNetworkAccess(service accesslist.UseCase, ctx *gin.Context) {
 		p := crypto.Decrypt(us.AtlasParams.PrivateKey, us.Key)
 		if accessRequest != nil {
 			resp, errordetail, err := service.CreateNetworkAccessRequest(u, p, accessRequest)
-			fmt.Println(resp)
 			if err != nil {
 				ctx.JSON(errordetail.Error, errordetail.ErrorCode)
 			} else {
+				//Update the status as closed.
+				stat, _ := service.UpdateNetworkRequestStatus(u, p, id[0], config.STR_REQ_STATUS_CLOSED)
+				if stat {
+				}
 				ctx.JSON(http.StatusOK, &resp)
 			}
 		} else {
@@ -92,10 +96,14 @@ func createDBAccessRequests(service dbaccesslist.UseCase, ctx *gin.Context) {
 		p := crypto.Decrypt(us.AtlasParams.PrivateKey, us.Key)
 		if accessRequest != nil {
 			resp, errordetail, err := service.CreateDBAccessRequest(u, p, accessRequest)
-			fmt.Println(resp)
 			if err != nil {
 				ctx.JSON(errordetail.Error, errordetail.ErrorCode)
+
 			} else {
+				stat, _ := service.UpdateDBAccessRequestStatus(u, p, id[0], config.STR_REQ_STATUS_CLOSED)
+				if stat {
+
+				}
 				ctx.JSON(http.StatusOK, &resp)
 			}
 		} else {

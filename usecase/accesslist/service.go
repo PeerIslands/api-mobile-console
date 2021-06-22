@@ -33,3 +33,7 @@ func (s *Service) CreateNetworkAccessRequest(u, p string, ent *entity.NetworkAcc
 func (s *Service) CreateNetworkAccessList(ent *entity.NetworkAccessList) error {
 	return s.repo.Create(ent)
 }
+
+func (s *Service) UpdateNetworkRequestStatus(u, p, id, status string) (bool, error) {
+	return s.repo.UpdateRequestStatus(u, p, id, status)
+}

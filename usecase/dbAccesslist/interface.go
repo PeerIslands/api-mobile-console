@@ -16,6 +16,7 @@ type Writer interface {
 	Create(e *entity.DBAccessRequest) error
 	Delete(e *entity.DBAccessRequest) error
 	Update(e *entity.DBAccessRequest) error
+	UpdateRequestStatus(u, p, id, status string) (bool, error)
 	CreateRequest(u, p string, model *entity.DBAccessRequest) (*presenter.DBAccessRequest, *presenter.ErrorDetail, error)
 }
 
@@ -30,4 +31,5 @@ type UseCase interface {
 	CreateDBAccessList(ent *entity.DBAccessRequest) error
 	GetOneDBAccessRequest(id string) (*entity.DBAccessRequest, error)
 	CreateDBAccessRequest(u, p string, ent *entity.DBAccessRequest) (*presenter.DBAccessRequest, *presenter.ErrorDetail, error)
+	UpdateDBAccessRequestStatus(u, p, id, status string) (bool, error)
 }

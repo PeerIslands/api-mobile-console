@@ -42,17 +42,17 @@ func (r *NetworkAccessList) ConvertToAPIRequest() *presenter.NetworkAccessList {
 
 //Database user access request
 type DBAccessRequest struct {
-	Id           string    `json:"id" bson:"_id"`
-	Groupid      string    `json:"groupId" bson:"groupId"`
-	Databasename string    `json:"databaseName" bson:"databaseName"`
-	Password     string    `json:"password" bson:"password"`
-	Roles        []Roles   `json:"roles" bson:"roles"`
-	Scopes       []Scopes  `json:"scopes" bson:"scopes"`
-	Username     string    `json:"username" bson:"username"`
-	CreatedAt    time.Time `bson:"created_at,omitempty"`
-	UpdatedAt    time.Time `bson:"updated_at,omitempty"`
-	CreatedBy    string    `bson:"createdBy,omitempty"`
-	Status       string    `bson:"status,omitempty"`
+	ID           primitive.ObjectID `json:"id" bson:"_id"`
+	Groupid      string             `json:"groupId" bson:"groupId"`
+	Databasename string             `json:"databaseName" bson:"databaseName"`
+	Password     string             `json:"password" bson:"password"`
+	Roles        []Roles            `json:"roles" bson:"roles"`
+	Scopes       []Scopes           `json:"scopes" bson:"scopes"`
+	Username     string             `json:"username" bson:"username"`
+	CreatedAt    time.Time          `bson:"created_at,omitempty"`
+	UpdatedAt    time.Time          `bson:"updated_at,omitempty"`
+	CreatedBy    string             `bson:"createdBy,omitempty"`
+	Status       string             `bson:"status,omitempty"`
 }
 type Roles struct {
 	Databasename string `bson:"databaseName" json:"databaseName"`

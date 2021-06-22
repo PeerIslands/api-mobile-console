@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"mongo-admin-backend/config"
 
 	"mongo-admin-backend/api/presenter"
 	"mongo-admin-backend/entity"
@@ -25,7 +25,7 @@ type DatabaseAccessMongoDB struct {
 }
 
 func NewDatabaseAccessMongoDB(client *mongo.Client, apiUrl string) *DatabaseAccessMongoDB {
-	collection := client.Database("mongoDbAdmin").Collection("databaseAccessRequest")
+	collection := client.Database("mongoDbAdmin").Collection("mongoadminrequests")
 	if apiUrl != "" {
 		return &DatabaseAccessMongoDB{
 			client:     client,
@@ -52,38 +52,29 @@ func (r *DatabaseAccessMongoDB) CreateRequest(u, p string, model *entity.DBAcces
 	return createDBRequest(contextWrapper.Ctx, r.collection, u, p, r.apiURL, model)
 }
 
+func (r *DatabaseAccessMongoDB) UpdateRequestStatus(u, p, id, status string) (bool, error) {
+	return updateOneRequestStatus(contextWrapper.Ctx, r.collection, id, status)
+}
+
 // Update an user.
 func (r *DatabaseAccessMongoDB) Update(e *entity.DBAccessRequest) error {
-	fmt.Println(e)
-
 	return nil
 }
 
 // Delete an user.
 func (r *DatabaseAccessMongoDB) Delete(e *entity.DBAccessRequest) error {
-	fmt.Println(e)
-
 	return nil
 }
 
 func createDBRequest(ctx context.Context, collection *mongo.Collection, u, p, baseURL string, model *entity.DBAccessRequest) (*presenter.DBAccessRequest, *presenter.ErrorDetail, error) {
 	groupId := model.Groupid
-	// fmt.Println(groupId)
-	// fmt.Println(model)
-	// fmt.Println(u)
-	// fmt.Println(p)
-
 	digestor := digest.NewDigestor(u, p)
 	authDB, _, _ := database.DBCredentialsVal.GetDBCredentials()
 	model.Databasename = authDB
 	path := "/groups" + "/" + groupId + "/" + "databaseUsers"
-	//reqBody, err1 := model.CreateJSON()
-	//fmt.Println(reqBody)
-	fmt.Println(authDB)
 	reqBody, err1 := model.CreateJSON()
 	var request = make(map[string]interface{})
 	json.Unmarshal(reqBody, &request)
-	fmt.Println(request)
 	result, err2 := digestor.Digest(baseURL, path, "POST", reqBody)
 	var dbaccessList presenter.DBAccessRequest
 	var errDetails presenter.ErrorDetail
@@ -98,25 +89,22 @@ func createDBRequest(ctx context.Context, collection *mongo.Collection, u, p, ba
 	if err2 == nil {
 		return &dbaccessList, &presenter.ErrorDetail{}, err1
 	} else {
-		fmt.Println("The output is ")
-		fmt.Println(dbaccessList)
-		return &dbaccessList, &errDetails, err1
+		return &dbaccessList, &errDetails, err2
 	}
 }
 
 func getAllDBRequest(ctx context.Context, collection *mongo.Collection) (*[]entity.DBAccessRequest, error) {
 
-	cursor, _ := collection.Find(ctx, bson.M{})
+	cursor, _ := collection.Find(ctx, bson.M{"requestType": config.STR_REQ_TYPE_DB_ACCESS, "status": config.STR_REQ_STATUS_OPEN})
 
 	var aList []entity.DBAccessRequest
 
 	for cursor.Next(ctx) {
-		var elem entity.DBAccessRequest
+		var elem entity.UserRequest
 		err := cursor.Decode(&elem)
 		if err != nil {
-			fmt.Println("Decoding failed")
 		}
-		aList = append(aList, elem)
+		aList = append(aList, elem.GetDBUserRequest())
 	}
 
 	return &aList, nil
@@ -128,9 +116,10 @@ func getDBRequest(ctx context.Context, collection *mongo.Collection, id string) 
 		return nil, errors.New("Invalid Request ID")
 	}
 	singleResult := collection.FindOne(ctx, bson.M{"_id": objectId})
-	var dbAccesslist entity.DBAccessRequest
+	var dbAccesslist entity.UserRequest
 	singleResult.Decode(&dbAccesslist)
-	return &dbAccesslist, nil
+	returnModel := dbAccesslist.GetDBUserRequest()
+	return &returnModel, nil
 }
 
 func (r *DatabaseAccessMongoDB) Create(e *entity.DBAccessRequest) error {
@@ -147,5 +136,21 @@ func createOneDBAccessRequest(ctx context.Context, collection *mongo.Collection,
 		} else {
 			return nil
 		}
+	}
+}
+
+func updateOneRequestStatus(ctx context.Context, collection *mongo.Collection, id, status string) (bool, error) {
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return false, errors.New("Invalid ID string")
+	}
+	result, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": objectId},
+		bson.D{{"$set", bson.D{{"status", status}}}})
+	if result.ModifiedCount > 0 {
+		return true, nil
+	} else {
+		return false, errors.New("Failed to update status")
 	}
 }

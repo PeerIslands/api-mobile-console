@@ -16,6 +16,7 @@ type Writer interface {
 	Create(e *entity.NetworkAccessList) error
 	Delete(e *entity.NetworkAccessList) error
 	Update(e *entity.NetworkAccessList) error
+	UpdateRequestStatus(u, p, id, status string) (bool, error)
 	CreateRequest(u, p string, model *presenter.NetworkAccessList) (*[]presenter.NetworkAccessList, *presenter.ErrorDetail, error)
 }
 
@@ -29,5 +30,6 @@ type UseCase interface {
 	GetAllNetworkAccessList() (*[]entity.NetworkAccessList, error)
 	CreateNetworkAccessList(ent *entity.NetworkAccessList) error
 	GetOneNetworkAccessRequest(id string) (*entity.NetworkAccessList, error)
+	UpdateNetworkRequestStatus(u, p, id, status string) (bool, error)
 	CreateNetworkAccessRequest(u, p string, ent *entity.NetworkAccessList) (*[]presenter.NetworkAccessList, *presenter.ErrorDetail, error)
 }
