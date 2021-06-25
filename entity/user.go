@@ -2,9 +2,10 @@ package entity
 
 import (
 	"errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	crypto2 "mongo-admin-backend/pkg/crypto"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
@@ -21,17 +22,34 @@ type User struct {
 //NewUser create a new user
 func NewUser(email, password, name, publicKey, privateKey string) (*User, error) {
 	var a = &AtlasParams{
-		PublicKey: publicKey,
+		PublicKey:  publicKey,
 		PrivateKey: privateKey,
 	}
 	var u = &User{
-		Email: email,
-		Name:  name,
+		Email:       email,
+		Name:        name,
 		AtlasParams: *a,
+		Password:    password,
+	}
+	u.GenerateKey()
+	u.Encrypt()
+	u.HashPassword()
+	err := u.Validate()
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func UserSignUp(email, password, name string) (*User, error) {
+	var u = &User{
+		Email:    email,
+		Name:     name,
 		Password: password,
 	}
-	u.Encrypt()
-	err := u.Validate()
+	err := u.ValidateSignup()
+	u.GenerateKey()
+	u.HashPassword()
 	if err != nil {
 		return nil, err
 	}
@@ -44,9 +62,16 @@ type AtlasParams struct {
 }
 
 func (u *User) Encrypt() {
-	u.Key = crypto2.GenerateKey()
 	u.AtlasParams.PrivateKey = crypto2.Encrypt(u.AtlasParams.PrivateKey, u.Key)
 	u.AtlasParams.PublicKey = crypto2.Encrypt(u.AtlasParams.PublicKey, u.Key)
+	//u.Password = crypto2.GetMD5Hash(u.Password)
+}
+
+func (u *User) GenerateKey() {
+	u.Key = crypto2.GenerateKey()
+}
+
+func (u *User) HashPassword() {
 	u.Password = crypto2.GetMD5Hash(u.Password)
 }
 
@@ -63,6 +88,17 @@ func (u *User) Validate() error {
 		return errors.New("publicKey can't be empty")
 	}
 
+	return nil
+}
+
+func (u *User) ValidateSignup() error {
+	if u.Name == "" {
+		return errors.New("name can't be empty")
+	} else if u.Email == "" {
+		return errors.New("email can't be empty")
+	} else if u.Password == "" {
+		return errors.New("password can't be empty")
+	}
 	return nil
 }
 

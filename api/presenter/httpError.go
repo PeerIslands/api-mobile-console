@@ -17,6 +17,6 @@ type MongoDBError struct {
 func (e *MongoDBError) Error() string { return e.Msg + " : " + e.Err.Error() }
 
 const (
-	ERR_NOTFOUND = 001
-	ERR_SYNTAX   = 002
+	ERR_NOTFOUND = 404
+	ERR_SYNTAX   = 500
 )

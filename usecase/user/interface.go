@@ -11,6 +11,7 @@ type Reader interface {
 type Writer interface {
 	Create(e *entity.User) (entity.User, error)
 	Update(e *entity.User) error
+	PutCredentials(email, privateKey, publicKey string) (*entity.User, error)
 	Delete(email string) error
 }
 
@@ -24,6 +25,8 @@ type Repository interface {
 type UseCase interface {
 	GetUser(email string) (*entity.User, error)
 	CreateUser(email, password, name, publicKey, privateKey string) (entity.User, error)
+	PutAtlasCredentials(email, privateKey, publicKey string) (*entity.User, error)
 	UpdateUser(e *entity.User) error
 	DeleteUser(email string) error
+	SignUp(email, password, name string) (entity.User, error)
 }

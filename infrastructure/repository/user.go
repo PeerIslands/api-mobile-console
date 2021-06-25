@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"mongo-admin-backend/entity"
 	"mongo-admin-backend/pkg/contextWrapper"
 	"time"
@@ -38,6 +39,28 @@ func (r *UserMongoDB) Create(e *entity.User) (entity.User, error) {
 	}
 	e.ID = result.InsertedID.(primitive.ObjectID)
 	return *e, nil
+}
+
+//Put Atlas Credentials for an user identified using email.
+
+func (r *UserMongoDB) PutCredentials(email, privateKey, publicKey string) (*entity.User, error) {
+	now := time.Now()
+	query := bson.M{"email": email}
+
+	update := bson.M{"$set": bson.M{"atlas_params.public_key": publicKey, "atlas_params.private_key": privateKey, "updated_at": now}}
+
+	result, databaseErr := r.collection.UpdateOne(contextWrapper.Ctx, query, update)
+	if databaseErr != nil {
+		return nil, databaseErr
+	}
+	if result.MatchedCount == 0 {
+		return nil, errors.New("User not present")
+	}
+	if result.ModifiedCount == 0 {
+		return nil, errors.New("Adding of credentials failed for the user")
+	}
+	return r.Get(email)
+
 }
 
 // Get an user.
