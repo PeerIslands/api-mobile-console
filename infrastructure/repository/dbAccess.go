@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"mongo-admin-backend/config"
 
 	"mongo-admin-backend/api/presenter"
@@ -86,10 +87,12 @@ func createDBRequest(ctx context.Context, collection *mongo.Collection, u, p, ba
 	_ = json.Unmarshal(jsonEncoded, &dbaccessList)
 	_ = json.Unmarshal(jsonEncoded, &errDetails)
 
-	if err2 == nil {
+	if err1 != nil {
 		return &dbaccessList, &presenter.ErrorDetail{}, err1
-	} else {
+	} else if err2 != nil {
 		return &dbaccessList, &errDetails, err2
+	} else {
+		return &dbaccessList, &errDetails, nil
 	}
 }
 
@@ -144,10 +147,11 @@ func updateOneRequestStatus(ctx context.Context, collection *mongo.Collection, i
 	if err != nil {
 		return false, errors.New("Invalid ID string")
 	}
+	fmt.Println("Here")
 	result, err := collection.UpdateOne(
 		ctx,
 		bson.M{"_id": objectId},
-		bson.D{{"$set", bson.D{{"status", status}}}})
+		bson.M{"$set": bson.M{"status": status}})
 	if result.ModifiedCount > 0 {
 		return true, nil
 	} else {

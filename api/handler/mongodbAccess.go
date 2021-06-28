@@ -36,6 +36,15 @@ func createNetworkAccess(service accesslist.UseCase, ctx *gin.Context) {
 			"error": err.Error(),
 		})
 	}
+	var input struct {
+		Approve bool `json:"approve"`
+	}
+	bindErr := ctx.ShouldBind(&input)
+	if bindErr != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": bindErr.Error(),
+		})
+	}
 
 	params := ctx.Request.URL.Query()
 
@@ -50,15 +59,24 @@ func createNetworkAccess(service accesslist.UseCase, ctx *gin.Context) {
 		u := crypto.Decrypt(us.AtlasParams.PublicKey, us.Key)
 		p := crypto.Decrypt(us.AtlasParams.PrivateKey, us.Key)
 		if accessRequest != nil {
-			resp, errordetail, err := service.CreateNetworkAccessRequest(u, p, accessRequest)
-			if err != nil {
-				ctx.JSON(errordetail.Error, errordetail.ErrorCode)
-			} else {
-				//Update the status as closed.
-				stat, _ := service.UpdateNetworkRequestStatus(u, p, id[0], config.STR_REQ_STATUS_CLOSED)
-				if stat {
+			if input.Approve {
+				resp, errordetail, err := service.CreateNetworkAccessRequest(u, p, accessRequest)
+				if err != nil {
+					ctx.JSON(errordetail.Error, errordetail.ErrorCode)
+				} else {
+					//Update the status as closed.
+					stat, _ := service.UpdateNetworkRequestStatus(u, p, id[0], config.STR_REQ_STATUS_CLOSED)
+					if stat {
+					}
+					ctx.JSON(http.StatusOK, &resp)
 				}
-				ctx.JSON(http.StatusOK, &resp)
+			} else {
+				stat, rejectErr := service.UpdateNetworkRequestStatus(u, p, id[0], config.STR_REQ_STATUS_REJECTED)
+				if rejectErr != nil {
+					ctx.JSON(http.StatusBadRequest, stat)
+				} else {
+					ctx.JSON(http.StatusOK, stat)
+				}
 			}
 		} else {
 			if err != nil {
@@ -83,38 +101,56 @@ func createDBAccessRequests(service dbaccesslist.UseCase, ctx *gin.Context) {
 		})
 	}
 
+	var input struct {
+		Approve bool `json:"approve"`
+	}
+	bindErr := ctx.ShouldBind(&input)
+	if bindErr != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": bindErr.Error(),
+		})
+	}
+
 	params := ctx.Request.URL.Query()
 
 	id, isIdPresent := params["id"]
 	if isIdPresent {
-		accessRequest, err := service.GetOneDBAccessRequest(id[0])
+		accessRequest, accessErr := service.GetOneDBAccessRequest(id[0])
 		//GET USER KEYS
 		userRepo := repository.NewUserMongoDB(database.Client)
 		userService := user.NewService(userRepo)
 		us, _ := userService.GetUser(email)
 		u := crypto.Decrypt(us.AtlasParams.PublicKey, us.Key)
 		p := crypto.Decrypt(us.AtlasParams.PrivateKey, us.Key)
-		if accessRequest != nil {
-			resp, errordetail, err := service.CreateDBAccessRequest(u, p, accessRequest)
-			if err != nil {
-				ctx.JSON(errordetail.Error, errordetail.ErrorCode)
+		if input.Approve {
+			if accessRequest != nil {
+				resp, errordetail, errResp := service.CreateDBAccessRequest(u, p, accessRequest)
+				if errResp != nil {
+					ctx.JSON(errordetail.Error, errordetail.ErrorCode)
 
-			} else {
-				stat, _ := service.UpdateDBAccessRequestStatus(u, p, id[0], config.STR_REQ_STATUS_CLOSED)
-				if stat {
+				} else {
+					stat, errStat := service.UpdateDBAccessRequestStatus(u, p, id[0], config.STR_REQ_STATUS_CLOSED)
 
+					if errStat != nil {
+						ctx.JSON(http.StatusInternalServerError, stat)
+					}
+					ctx.JSON(http.StatusOK, &resp)
 				}
-				ctx.JSON(http.StatusOK, &resp)
+			} else {
+				if accessErr != nil {
+					ctx.JSON(http.StatusBadRequest, err)
+				} else {
+					ctx.JSON(http.StatusBadRequest, "The ID is not present")
+				}
 			}
 		} else {
-			if err != nil {
-				ctx.JSON(http.StatusBadRequest, err)
+			stat, rejectErr := service.UpdateDBAccessRequestStatus(u, p, id[0], config.STR_REQ_STATUS_REJECTED)
+			if rejectErr != nil {
+				ctx.JSON(http.StatusBadRequest, stat)
 			} else {
-				//ctx.JSON(http.StatusOK, "The ID is not present")
+				ctx.JSON(http.StatusOK, stat)
 			}
 		}
-
-		//ctx.JSON(http.StatusOK, "{status : ok}")
 	} else {
 		ctx.JSON(http.StatusBadRequest, errors.New("Failed"))
 	}

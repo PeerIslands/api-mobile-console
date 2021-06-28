@@ -56,7 +56,7 @@ func (d *Digestor) Digest(host, uri, method string, postBody []byte) ([]byte, er
 		panic(err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			panic(err)
