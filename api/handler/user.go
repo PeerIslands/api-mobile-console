@@ -85,10 +85,17 @@ func getUser(service user.UseCase, ctx *gin.Context) {
 				"error": err.Error(),
 			})
 		} else {
+			var isUserRegistered bool
+			if user.AtlasParams.PrivateKey != "" {
+				isUserRegistered = true
+			} else {
+				isUserRegistered = false
+			}
 			toJ := &presenter.User{
-				ID:    user.ID,
-				Email: user.Email,
-				Name:  user.Name,
+				ID:      user.ID,
+				Email:   user.Email,
+				Name:    user.Name,
+				IsAdmin: isUserRegistered,
 			}
 
 			ctx.JSON(http.StatusOK, toJ)
