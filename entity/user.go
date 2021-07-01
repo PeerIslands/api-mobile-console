@@ -62,8 +62,13 @@ type AtlasParams struct {
 }
 
 func (u *User) Encrypt() {
-	u.AtlasParams.PrivateKey = crypto2.Encrypt(u.AtlasParams.PrivateKey, u.Key)
-	u.AtlasParams.PublicKey = crypto2.Encrypt(u.AtlasParams.PublicKey, u.Key)
+	if u.AtlasParams.PrivateKey != "" {
+		u.AtlasParams.PrivateKey = crypto2.Encrypt(u.AtlasParams.PrivateKey, u.Key)
+	}
+
+	if u.AtlasParams.PublicKey != "" {
+		u.AtlasParams.PublicKey = crypto2.Encrypt(u.AtlasParams.PublicKey, u.Key)
+	}
 	//u.Password = crypto2.GetMD5Hash(u.Password)
 }
 

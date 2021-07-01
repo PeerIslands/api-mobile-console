@@ -47,7 +47,26 @@ func (r *UserMongoDB) PutCredentials(email, privateKey, publicKey string) (*enti
 	now := time.Now()
 	query := bson.M{"email": email}
 
-	update := bson.M{"$set": bson.M{"atlas_params.public_key": publicKey, "atlas_params.private_key": privateKey, "updated_at": now}}
+	user, userErr := r.Get(email)
+
+	if userErr != nil {
+		return nil, userErr
+	}
+
+	type atlasParams struct {
+		PublicKey  string `json:"public_key" bson:"public_key"`
+		PrivateKey string `json:"private_key" bson:"private_key"`
+	}
+	updateParams := atlasParams{PublicKey: publicKey, PrivateKey: privateKey}
+
+	if updateParams.PrivateKey == "" {
+		updateParams.PrivateKey = user.AtlasParams.PrivateKey
+	}
+	if updateParams.PublicKey == "" {
+		updateParams.PublicKey = user.AtlasParams.PublicKey
+	}
+
+	update := bson.M{"$set": bson.M{"atlas_params": updateParams, "updated_at": now}}
 
 	result, databaseErr := r.collection.UpdateOne(contextWrapper.Ctx, query, update)
 	if databaseErr != nil {

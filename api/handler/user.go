@@ -86,7 +86,7 @@ func getUser(service user.UseCase, ctx *gin.Context) {
 			})
 		} else {
 			var isUserRegistered bool
-			if user.AtlasParams.PrivateKey != "" {
+			if user.AtlasParams.PrivateKey != "" && user.AtlasParams.PublicKey != "" {
 				isUserRegistered = true
 			} else {
 				isUserRegistered = false
@@ -128,11 +128,17 @@ func putUserCredentials(service user.UseCase, ctx *gin.Context) {
 		if updateErr != nil {
 			ctx.JSON(http.StatusInternalServerError, err)
 		} else {
-
+			var isUserRegistered bool
+			if user.AtlasParams.PrivateKey != "" && user.AtlasParams.PublicKey != "" {
+				isUserRegistered = true
+			} else {
+				isUserRegistered = false
+			}
 			toJ := &presenter.User{
-				ID:    user.ID,
-				Email: user.Email,
-				Name:  user.Name,
+				ID:      user.ID,
+				Email:   user.Email,
+				Name:    user.Name,
+				IsAdmin: isUserRegistered,
 			}
 
 			ctx.JSON(http.StatusOK, toJ)
