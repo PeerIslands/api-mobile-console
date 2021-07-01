@@ -10,6 +10,7 @@ import (
 	"mongo-admin-backend/pkg/contextWrapper"
 	"mongo-admin-backend/usecase/accesslist"
 	"mongo-admin-backend/usecase/auth"
+	"mongo-admin-backend/usecase/dashboard"
 	dbaccesslist "mongo-admin-backend/usecase/dbAccesslist"
 	"mongo-admin-backend/usecase/login"
 	"mongo-admin-backend/usecase/user"
@@ -53,12 +54,16 @@ func main() {
 	dbAccessListRepo := repository.NewDatabaseAccessMongoDB(database.Client, config.ENVIRONMENT.BASE_PATH)
 	dbAccessListService := dbaccesslist.NewService(dbAccessListRepo)
 
+	dashboardRepo := repository.NewDashBoardRepo(config.ENVIRONMENT.BASE_PATH)
+	dashboardService := dashboard.NewService(dashboardRepo)
+
 	//user
 	handler.MakeUserHandlers(r, userService)
 	handler.MakeUserNoAuthHandlers(r, userService)
 	handler.MakeMongoHandlers(r)
 	handler.MakeMongoAccessHandlers(r, accessListService)
 	handler.MakeMongoDBAccessHandlers(r, dbAccessListService)
+	handler.MakeDashboardHandlers(r, dashboardService)
 	fmt.Println("Server is running at: " + config.ENVIRONMENT.API_PORT)
 	r.Run(":" + config.ENVIRONMENT.API_PORT)
 }
