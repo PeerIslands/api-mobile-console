@@ -20,3 +20,18 @@ This project has  4 Domain layer :
  * Usecase Layer  
  * Delivery Layer
  
+![golang clean architecture] ![Clean Architecture](https://user-images.githubusercontent.com/10128767/125108572-d1443300-e0a7-11eb-9b11-550b4c40c83a.png)
+
+### How To Run This Project
+
+Clone the project 
+Create .env file with below contents
+
+DB_URI=<Your MongoDB Connection URL>
+PORT=8000
+BASE_URL=https://cloud.mongodb.com/api/atlas/v1.0
+GROUPS_PATH=/groups
+JWT_SECRET_KEY=<ANY JWK SECRET KET FOR AUTH>
+
+cd  api-mobile-console/cmd/mongo-admin-api
+go run main.go
